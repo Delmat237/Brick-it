@@ -19,6 +19,7 @@ class Brick():
         #redimensionnement
         self.img = pg.transform.scale(img,(50,30))
                 
+
 #initialisation de la fenetre
 pg.init()
 #creation de la fenetre
@@ -28,11 +29,11 @@ pg.display.set_caption("BREAK IT")
 
 #chargement des objets
 paddle = pg.image.load("paddle.gif").convert_alpha()
-blue_bricks = [Brick(5) for i in range(8)]
-green_bricks = [Brick(4) for i in range(10)]
-pink_bricks = [Brick(3) for i in range(4)]
-purple_bricks = [Brick(2) for i in range(15)]
-yellow_bricks = [Brick(1) for i in range(15)]
+blue_bricks = [Brick(5) for i in range(rd.randrange(10))]
+green_bricks = [Brick(4) for i in range(rd.randrange(15))]
+pink_bricks = [Brick(3) for i in range(rd.randrange(10))]
+purple_bricks = [Brick(2) for i in range(rd.randrange(15))]
+yellow_bricks = [Brick(1) for i in range(rd.randrange(10))]
 
 liste = blue_bricks + green_bricks +pink_bricks + purple_bricks + yellow_bricks
 bricks = rd.sample(liste, len(liste))
@@ -51,20 +52,32 @@ ball = pg.transform .scale(ball,(20,20))
 lifes = [pg.transform .scale(paddle,(50,20)),pg.transform .scale(paddle,(50,20)),pg.transform .scale(paddle,(50,20))]
 
 # position des objets
-position_ball = pg.Vector2(w//3,h//3)
-position_paddle = pg.Vector2(w//2,h-50)
+position_ball = pg.Vector2(w//2,h-80)
+position_paddle = pg.Vector2(w//2-paddle.get_width()//2,h-50)
 position_wall,position_wall1,position_wall2,position_wall3 = [pg.Vector2(x,y) for x,y in [(10,20),(30,80),(150,80),(w-20,20)]]
+column  = rd.randrange(3,10)
+row =  int(len(bricks)/column)+1
+position_bricks = [(w//2+i*50,50+j*30) for i in range(row) for j in range(column)]
+
 speed = 2 
-depl_ball = pg.Vector2(0,1) #deplacement de la balle
+depl_ball = pg.Vector2(0,-1) #deplacement de la balle
 depl_paddle = 0 #deplacement du paddle
-position_bricks = [(w//2+i*50,50+j*30) for i in range(6) for j in range(9)]
-rect_bricks = [pg.Rect(x,y,50,30) for x,y in position_bricks]
+
+
+
 position_lifes =[(w-3*55,10),(w-2*55,10),(w-1*55,10)]
-score = 0
-play = False
+score,brick_off = 0,0 #brick_off est le numbre de brick , ceci nous permettra de savoir si le joueur a gagner
+play,pause,gameover,congratulation = False,False,False,False
 font = pg.font.SysFont("bradley hand itc",35) #POLICE DE CARACTERE
-texte = "SCORE : 0000"
+texte,mess= "SCORE : 0000",None
+police = pg.font.SysFont("algerian",45)
+pause_surface = pg.font.SysFont("bradley hand itc",35).render("PAUSE !!!",True,"green")
+gameover_surface = pg.font.SysFont("bradley hand itc",35).render("GAME OVER !!!",True,"green")
+congrat_surface = pg.font.SysFont("bradley hand itc",35).render("CONGRATULATION !!! !!!",True,"green")
+
+
 coeur = 3
+x,y = w//2,h #position texte defilant
 
 running = True
 while running:
@@ -76,10 +89,12 @@ while running:
                 depl_paddle = -speed
             elif event.key == pg.K_RIGHT:
                 depl_paddle = speed
-            elif event.key == pg.K_RETURN:
+            elif event.key == pg.K_RETURN and gameover == False:
                 play = True
+                pause = False
             elif event.key == pg.K_BACKSPACE:
                 play = False
+                pause = True
             elif event.key == pg.K_SPACE:
                 coeur -= 1
         elif event.type == pg.KEYUP:
@@ -109,6 +124,7 @@ while running:
     rect_wall2 = wall2.get_rect().move(position_wall2.x,position_wall2.y)
     rect_wall3 = wall.get_rect().move(position_wall3.x,position_wall3.y)
     
+    rect_bricks = [pg.Rect(x,y,50,30) for x,y in position_bricks]
             
     
     #ce qui se passe lorsqu'il y'a collision
@@ -124,8 +140,6 @@ while running:
             depl_ball.x = 0
             depl_ball.y = -speed/2
         
-        
-        
     if rect_ball.colliderect(rect_wall ) or rect_ball.colliderect(rect_wall1) or\
        rect_ball.colliderect(rect_wall2) or rect_ball.colliderect(rect_wall3):
         depl_ball.x = -depl_ball.x
@@ -133,36 +147,51 @@ while running:
     for i,brick in enumerate(bricks):
         p = brick.life
         if rect_ball.colliderect(rect_bricks[i]):
-            score += 1
             if p == 1:
                 position_bricks[i] = (w+100,h)
+                score += 5
+                brick_off += 1
+                mess = "+ 5"
             else:
                 bricks[i] = Brick(p-1)
                 depl_ball.x = -depl_ball.x
                 depl_ball.y = -depl_ball.y
-            
+                score += 1
+                mess = "+ 1"
             
                  
-                
     if play:
         position_paddle.x += depl_paddle
         position_ball.x += depl_ball.x
         position_ball.y += depl_ball.y
-    
+        y -= 1
+
     #CREATION SURFACE DE TEXTE
     texte = "SCORE : {}".format(score)
     score_surface = font.render(texte,True,"white")
+    surface_text = police.render(mess,True,"navy")
+    
     #POSITION DU TEXTE
     position_score = (150-score_surface.get_width()//2,20-score_surface.get_height()//2)
+    if y <= 10 :
+        y = h
+        mess = None
+    position_text = (x-surface_text.get_width()//2,y-surface_text.get_height()//2)
+
     try:
         lifes[-coeur-1].set_alpha(0)
         assert(coeur > 0)
     except AssertionError:
-        break
+        gameover = True
+        play = False
     except:
         pass
     
+    if brick_off == len(bricks):
+        congrat = True
+
     fenetre.fill((0,0,0)) # remplissage du background
+    #Affichage des objets 
     fenetre.blit(paddle,(position_paddle.x,position_paddle.y))
     for i,brick in enumerate(bricks):
         fenetre.blit(brick.img,(position_bricks[i]))
@@ -172,11 +201,19 @@ while running:
     fenetre.blit(wall2,(position_wall2.x,position_wall2.y))
     fenetre.blit(wall,(position_wall3.x,position_wall3.y))
     fenetre.blit(ball,(position_ball.x,position_ball.y)) 
+
     for i,life in enumerate(lifes):
         fenetre.blit(life,position_lifes[i])
-        
+     #Affichage des textes
     fenetre.blit(score_surface,position_score)
-    
+    fenetre.blit(surface_text,position_text)
+    if pause :
+        fenetre.blit(pause_surface,(w//2,h//2))    
+    if gameover:
+        fenetre.blit(gameover_surface,(w//2,h//2))
+    if congratulation:
+        fenetre.blit(congrat_surface,(w//2,h//2))
+
     # MISE A JOUR DE LA FENETRE
     pg.display.flip()
 #Fermeture de la page
