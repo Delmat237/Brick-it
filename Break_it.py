@@ -28,6 +28,7 @@ fenetre = pg.display.set_mode((w,h))
 pg.display.set_caption("BREAK IT")
 
 #chargement des objets
+background = pg.image.load("background.gif").convert_alpha()
 paddle = pg.image.load("paddle.gif").convert_alpha()
 blue_bricks = [Brick(5) for i in range(rd.randrange(10))]
 green_bricks = [Brick(4) for i in range(rd.randrange(15))]
@@ -44,12 +45,15 @@ ball = pg.image.load("ball.gif").convert_alpha()
 
 
 #REDIMENSIONNEMENT DES objets
+background = pg.transform.scale(background,(w,h))
 paddle = pg.transform .scale(paddle,(100,30))
 wall = pg.transform .scale(wall,(20,h))
 wall1 = pg.transform .scale(wall1,(30,h//2-20))
 wall2 = pg.transform .scale(wall2,(30,h//2-20))
 ball = pg.transform .scale(ball,(20,20))
 lifes = [pg.transform .scale(paddle,(50,20)),pg.transform .scale(paddle,(50,20)),pg.transform .scale(paddle,(50,20))]
+
+background.set_alpha(100)
 
 # position des objets
 position_ball = pg.Vector2(w//2,h-80)
@@ -59,8 +63,13 @@ column  = rd.randrange(3,10)
 row =  int(len(bricks)/column)+1
 position_bricks = [(w//2+i*50,50+j*30) for i in range(row) for j in range(column)]
 
+<<<<<<< HEAD
+speed = 2
+depl_ball = pg.Vector2(0,-2) #deplacement de la balle
+=======
 speed = 2 
 depl_ball = pg.Vector2(0,-1) #deplacement de la balle
+>>>>>>> db024acf9df49faf8ed2ea040e65e9477ed44d8e
 depl_paddle = 0 #deplacement du paddle
 
 
@@ -86,29 +95,40 @@ while running:
             running = False
         elif event.type == pg.KEYDOWN :
             if event.key == pg.K_LEFT:
-                depl_paddle = -speed
+                depl_paddle = -speed-1
             elif event.key == pg.K_RIGHT:
+<<<<<<< HEAD
+                depl_paddle = speed+1
+=======
                 depl_paddle = speed
+>>>>>>> db024acf9df49faf8ed2ea040e65e9477ed44d8e
             elif event.key == pg.K_RETURN and gameover == False:
                 play = True
                 pause = False
             elif event.key == pg.K_BACKSPACE:
                 play = False
                 pause = True
+<<<<<<< HEAD
+            elif event.key == pg.K_ESCAPE:
+                running = False
+=======
             elif event.key == pg.K_SPACE:
                 coeur -= 1
+>>>>>>> db024acf9df49faf8ed2ea040e65e9477ed44d8e
         elif event.type == pg.KEYUP:
             if event.key in [pg.K_LEFT,pg.K_RIGHT]:
                 depl_paddle = 0
                 
     #controle du deplacement des objets mobile
-    if position_paddle.x <=50 or position_paddle.x >= w-100:
+    if position_paddle.x <=10 or position_paddle.x >= w-100:
         depl_paddle = -depl_paddle
     
     if position_ball.x <= 50 or position_ball.x >= w-50  :
         depl_ball.x =-depl_ball.x
+        
     if position_ball.y <= 10:
         depl_ball.y =-depl_ball.y
+        
     if position_ball.y > h-paddle.get_height():
         #on soustrait un coeur
         coeur -= 1
@@ -131,14 +151,18 @@ while running:
     if rect_ball.colliderect(rect_paddle):
         x1,x2,l = position_ball.x +ball.get_width()//2 , position_paddle.x , paddle.get_width()
         if x1 >= x2 and x1 <= x2+5*l/12: #si la balle rebondit sur la partie gauche du paddle
-            depl_ball.x = -speed/2
-            depl_ball.y = -speed/2
+            depl_ball.x = -speed-rd.randrange(1, 2)
+            depl_ball.y = -speed
         elif x1 >= x2+7*l/12 and x1 <= x2+l: #si la balle rebondit sur la partie droite du paddle
-            depl_ball.x = speed/2
-            depl_ball.y = -speed/2
+            depl_ball.x = speed+rd.randrange(1, 2)
+            depl_ball.y = -speed
         elif x1 >= x2+5*l/12 and x1 <= x2 +7*l/12:
             depl_ball.x = 0
+<<<<<<< HEAD
+            depl_ball.y = -speed
+=======
             depl_ball.y = -speed/2
+>>>>>>> db024acf9df49faf8ed2ea040e65e9477ed44d8e
         
     if rect_ball.colliderect(rect_wall ) or rect_ball.colliderect(rect_wall1) or\
        rect_ball.colliderect(rect_wall2) or rect_ball.colliderect(rect_wall3):
@@ -154,7 +178,7 @@ while running:
                 mess = "+ 5"
             else:
                 bricks[i] = Brick(p-1)
-                depl_ball.x = -depl_ball.x
+                depl_ball.x = -depl_ball.x-rd.randrange(1, 2)
                 depl_ball.y = -depl_ball.y
                 score += 1
                 mess = "+ 1"
@@ -191,6 +215,10 @@ while running:
         congrat = True
 
     fenetre.fill((0,0,0)) # remplissage du background
+<<<<<<< HEAD
+    fenetre.blit(background,(0,0))
+=======
+>>>>>>> db024acf9df49faf8ed2ea040e65e9477ed44d8e
     #Affichage des objets 
     fenetre.blit(paddle,(position_paddle.x,position_paddle.y))
     for i,brick in enumerate(bricks):
